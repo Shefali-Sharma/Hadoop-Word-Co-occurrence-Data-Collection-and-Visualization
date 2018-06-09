@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="d3.layout.cloud.js"></script>
+<script src="example.words.js"></script>
+<script src="example1.words.js"></script>
+<script src="example2.words.js"></script>
+<head>
+    <title>Word Cloud</title>
+</head>
+<style>
+	.left-div {
+    	float: left;
+    	/*height: 20px;*/
+	    margin-right: 8px;
+	    border: 1px solid black;
+    	outline-style: outset;
+    	outline-width: 1px;
+    	
+	}
+	.right-div {
+    	border: 1px solid black;
+    	outline-style: outset;
+    	outline-width: 1px;
+	}
+    body {
+        font-family:"Lucida Grande","Droid Sans",Arial,Helvetica,sans-serif;
+    }
+</style>
+<body align="center">
+	<h2>WordCloud for NYTimes and Twitter</h2>
+	<div id="wordcloud_dropdown"></div><br/>
+	
+	<div id="wordcloud_trump" style="display: inline;">
+		<div class="left-div" align="center">
+			<div>Trump Women Accuse - NYTimes</div>
+			<div id="wordcloud_trump_ny"></div>
+		</div>
+		
+		<div class="right-div" align="center">
+			<div>Trump Women Accuse - Twitter</div>
+			<div id="wordcloud_trump_tw"></div>
+		</div>
+		
+		</br>
+		<div>
+			<div>Co-occurrence of Top Words</div>
+			<div id="cotrump" >
+				<div class="left-div" align="center">
+					<div>Trump Women Accuse - NYTimes (Co-occurrence)</div>
+					<div id="wordcloud_trump_ny_co"></div>
+				</div>
+				<div class="right-div" align="center">
+					<div>Trump Women Accuse - Twitter (Co-occurrence)</div>
+					<div id="wordcloud_trump_tw_co"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div id="wordcloud_camb" style="display: none;">
+		<div class="left-div" align="center">
+			<div>Cambridge Analytica - NYTimes</div>
+			<div id="wordcloud_camb_ny"></div>
+		</div>
+		
+		<div class="right-div" align="center">
+			<div>Cambridge Analytica - Twitter</div>
+			<div id="wordcloud_camb_tw"></div>
+		</div>
+		
+		</br>
+		<div>
+			<div>Co-occurrence of Top Words</div>
+			<div id="cocamb">
+				<div class="left-div" align="center">
+					<div>Cambridge Analytica - NYTimes (Co-occurrence)</div>
+					<div id="wordcloud_camb_ny_co"></div>
+				</div>
+				<div class="right-div" align="center">
+					<div>Cambridge Analytica - Twitter (Co-occurrence)</div>
+					<div id="wordcloud_camb_tw_co"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div id="wordcloud_zuck" style="display: none;">
+		<div class="left-div" align="center">
+			<div>Mark Zuckerberg - NYTimes</div>
+			<div id="wordcloud_zuck_ny"></div>
+		</div>
+		
+		<div class="right-div" align="center">
+			<div>Mark Zuckerberg - Twitter</div>
+			<div id="wordcloud_zuck_tw"></div>
+		</div>
+		
+		</br>
+		<div>
+			<div>Co-occurrence of Top Words</div>
+			<div id="cozuck">
+				<div class="left-div" align="center">
+					<div>Mark Zuckerberg - NYTimes (Co-occurrence)</div>
+					<div id="wordcloud_zuck_ny_co"></div>
+				</div>
+				<div class="right-div" align="center">
+					<div>Mark Zuckerberg - Twitter (Co-occurrence)</div>
+					<div id="wordcloud_zuck_tw_co"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+</body>
+<script>
+
+   	var cambTop =  [{"text": "facebook", "size": 1023/10}, {"text": "the", "size": 874/10}, {"text": "data", "size": 729/10}, {"text": "said", "size": 642/10}, {"text": "mr", "size": 598/10}, {"text": "cambridge", "size": 568/10}, {"text": "analytica", "size": 436/10}, {"text": "advertisement", "size": 383/10}, {"text": "company", "size": 367/10}, {"text": "i", "size": 321/10}, {"text": "new", "size": 309/10}, {"text": "users", "size": 269/10}, {"text": "trump", "size": 258/10}, {"text": "information", "size": 255/10}, {"text": "people", "size": 236/10}, {"text": "times", "size": 231/10}, {"text": "would", "size": 231/10}, {"text": "page", "size": 213/10}, {"text": "zuckerberg", "size": 204/10}, {"text": "york", "size": 194/10}];
+	var cambTopTweet =  [{"text": "de", "size": 2346/20}, {"text": "data", "size": 2142/20}, {"text": "n", "size": 1663/20}, {"text": "trump", "size": 1441/20}, {"text": "la", "size": 1181/20}, {"text": "given", "size": 1140/20}, {"text": "scandal", "size": 1117/20}, {"text": "en", "size": 1056/20}, {"text": "con", "size": 990/20}, {"text": "coverage", "size": 886/20}, {"text": "dear", "size": 874/20}, {"text": "tomlondon", "size": 867/20}, {"text": "week", "size": 835/20}, {"text": "used", "size": 832/20}, {"text": "congress", "size": 806/20}, {"text": "el", "size": 797/20}, {"text": "like", "size": 775/20}, {"text": "appropriate", "size": 769/20}, {"text": "news", "size": 752/20}, {"text": "l", "size": 743/20}];
+	var trumpTop = [{"text": "trump", "size": 1288/10}, {"text": "mr", "size": 920/10}, {"text": "said", "size": 797/10}, {"text": "the", "size": 633/10}, {"text": "i", "size": 527/10}, {"text": "president", "size": 411/10}, {"text": "women", "size": 408/10}, {"text": "advertisement", "size": 393/10}, {"text": "ms", "size": 338/10}, {"text": "new", "size": 322/10}, {"text": "would", "size": 263/10}, {"text": "us", "size": 258/10}, {"text": "it", "size": 233/10}, {"text": "one", "size": 216/10}, {"text": "york", "size": 214/10}, {"text": "page", "size": 213/10}, {"text": "in", "size": 204/10}, {"text": "we", "size": 192/10}, {"text": "he", "size": 188/10}, {"text": "times", "size": 188/10}];
+	var trumpTopTweet = [{"text": "trump", "size": 14085/110}, {"text": "president", "size": 1884/20}, {"text": "de", "size": 924/20}, {"text": "would", "size": 891/20}, {"text": "days", "size": 867/20}, {"text": "first", "size": 818/20}, {"text": "us", "size": 767/20}, {"text": "like", "size": 685/20}, {"text": "border", "size": 664/20}, {"text": "trade", "size": 639/20}, {"text": "war", "size": 638/20}, {"text": "u", "size": 627/20}, {"text": "business", "size": 591/20}, {"text": "market", "size": 580/20}, {"text": "tax", "size": 545/20}, {"text": "stock", "size": 541/20}, {"text": "idea", "size": 534/20}, {"text": "pay", "size": 528/20}, {"text": "get", "size": 514/20}, {"text": "russia", "size": 493/20}];
+	var zuckTop = [{"text": "facebook", "size": 1501/10}, {"text": "said", "size": 742/10}, {"text": "zuckerberg", "size": 626/10}, {"text": "data", "size": 583/10}, {"text": "company", "size": 502/10}, {"text": "mr", "size": 471/10}, {"text": "advertisement", "size": 409/10}, {"text": "users", "size": 370/10}, {"text": "people", "size": 351/10}, {"text": "new", "size": 294/10}, {"text": "would", "size": 265/10}, {"text": "cambridge", "size": 263/10}, {"text": "analytica", "size": 241/10}, {"text": "information", "size": 231}, {"text": "privacy", "size": 230/10}, {"text": "u", "size": 226/10}, {"text": "page", "size": 225/10}, {"text": "also", "size": 215/10}, {"text": "news", "size": 197/10}, {"text": "social", "size": 197/10}];
+	var zuckTopTweet = [{"text": "mark", "size": 9329/90}, {"text": "apology", "size": 2281/50}, {"text": "much", "size": 1812/50}, {"text": "pretty", "size": 1783/50}, {"text": "always", "size": 1773/50}, {"text": "act", "size": 1757/50}, {"text": "nonstop", "size": 1748/50}, {"text": "de", "size": 1124/50}, {"text": "everyone", "size": 1060/50}, {"text": "way", "size": 1032/50}, {"text": "get", "size": 1020/50}, {"text": "like", "size": 950/50}, {"text": "since", "size": 903/90}, {"text": "corresponding", "size": 856/90}, {"text": "said", "size": 837/50}, {"text": "able", "size": 784/50}, {"text": "decision", "size": 761/50}, {"text": "note", "size": 759/50}, {"text": "appeal", "size": 757/50}, {"text": "final", "size": 757/50}];
+	
+	var cambTop_co =  [
+ {
+   "text": "cambridge-analytica",
+   "size": 435/40
+ },
+ {
+   "text": "york-times",
+   "size": 135
+ },
+ {
+   "text": "facebook-data",
+   "size": 98
+ },
+ {
+   "text": "social-media",
+   "size": 87
+ },
+ {
+   "text": "united-states",
+   "size": 84
+ },
+ {
+   "text": "us-think",
+   "size": 83
+ },
+ {
+   "text": "facebook-users",
+   "size": 80
+ },
+ {
+   "text": "50-million",
+   "size": 73
+ },
+ {
+   "text": "trump-campaign",
+   "size": 71
+ },
+ {
+   "text": "chief-executive",
+   "size": 68
+ },
+ {
+   "text": "times-newsletters",
+   "size": 60
+ },
+ {
+   "text": "president-trump",
+   "size": 60
+ },
+ {
+   "text": "email-address",
+   "size": 60
+ },
+ {
+   "text": "newsletter-view",
+   "size": 58
+ },
+ {
+   "text": "invalid-email",
+   "size": 58
+ },
+ {
+   "text": "box-invalid",
+   "size": 58
+ },
+ {
+   "text": "view-york",
+   "size": 58
+ },
+ {
+   "text": "invalid-address",
+   "size": 58
+ },
+ {
+   "text": "box-email",
+   "size": 58
+ },
+ {
+   "text": "york-newsletters",
+   "size": 58
+ },
+ {
+   "text": "robot-clicking",
+   "size": 58
+ },
+ {
+   "text": "robot-box",
+   "size": 58
+ },
+ {
+   "text": "clicking-invalid",
+   "size": 58
+ },
+ {
+   "text": "select-newsletter",
+   "size": 58
+ },
+ {
+   "text": "address-enter",
+   "size": 58
+ },
+ {
+   "text": "verify-robot",
+   "size": 58
+ },
+ {
+   "text": "clicking-box",
+   "size": 58
+ },
+ {
+   "text": "verify-clicking",
+   "size": 58
+ },
+ {
+   "text": "mark-zuckerberg",
+   "size": 56
+ },
+ {
+   "text": "dr-hawking",
+   "size": 55
+ },
+ {
+   "text": "million-users",
+   "size": 53
+ },
+ {
+   "text": "social-network",
+   "size": 50
+ },
+ {
+   "text": "data-facebook",
+   "size": 45
+ },
+ {
+   "text": "analytica-data",
+   "size": 41
+ },
+ {
+   "text": "data-firm",
+   "size": 40
+ },
+ {
+   "text": "million-facebook",
+   "size": 40
+ },
+ {
+   "text": "personal-information",
+   "size": 40
+ },
+ {
+   "text": "50-facebook",
+   "size": 39
+ },
+ {
+   "text": "third-party",
+   "size": 39
+ },
+ {
+   "text": "political-firm",
+   "size": 39
+ },
+ {
+   "text": "data-cambridge",
+   "size": 37
+ },
+ {
+   "text": "european-union",
+   "size": 35
+ },
+ {
+   "text": "facebook-chief",
+   "size": 35
+ },
+ {
+   "text": "white-house",
+   "size": 34
+ },
+ {
+   "text": "personal-data",
+   "size": 34
+ },
+ {
+   "text": "data-million",
+   "size": 32
+ },
+ {
+   "text": "access-data",
+   "size": 31
+ },
+ {
+   "text": "vote-leave",
+   "size": 31
+ },
+ {
+   "text": "data-50",
+   "size": 30
+ },
+ {
+   "text": "donald-trump",
+   "size": 30
+ }
+];
+
+	var cambTopTweet_co =  [
+ {
+   "text": "tomlondon-given",
+   "size": 856/80
+ },
+ {
+   "text": "coverage-week",
+   "size": 769/80
+ },
+ {
+   "text": "appropriate-week",
+   "size": 769/80
+ },
+ {
+   "text": "given-appropriate",
+   "size": 769/80
+ },
+ {
+   "text": "appropriate-coverage",
+   "size": 769/80
+ },
+ {
+   "text": "dear-given",
+   "size": 769/80
+ },
+ {
+   "text": "given-coverage",
+   "size": 769/80
+ },
+ {
+   "text": "dear-appropriate",
+   "size": 769/80
+ },
+ {
+   "text": "tomlondon-dear",
+   "size": 767/80
+ },
+ {
+   "text": "pri-nacional",
+   "size": 578/80
+ },
+ {
+   "text": "nacional-con",
+   "size": 546/80
+ },
+ {
+   "text": "al-pri",
+   "size": 546/80
+ },
+ {
+   "text": "al-nacional",
+   "size": 546/80
+ },
+ {
+   "text": "pri-con",
+   "size": 542/80
+ },
+ {
+   "text": "con-zj",
+   "size": 523/80
+ },
+ {
+   "text": "zj-np",
+   "size": 523/80
+ },
+ {
+   "text": "week-extraordinary",
+   "size": 513/80
+ },
+ {
+   "text": "coverage-extraordinary",
+   "size": 513/80
+ },
+ {
+   "text": "extraordinary-concerning",
+   "size": 511/80
+ },
+ {
+   "text": "week-concerning",
+   "size": 511/80
+ },
+ {
+   "text": "channel-news",
+   "size": 453/80
+ },
+ {
+   "text": "trump-campaign",
+   "size": 377/80
+ },
+ {
+   "text": "criminal-complaint",
+   "size": 315/80
+ },
+ {
+   "text": "criminal-trump",
+   "size": 310/80
+ },
+ {
+   "text": "super-pac",
+   "size": 309/80
+ },
+ {
+   "text": "complaint-campaign",
+   "size": 308/80
+ },
+ {
+   "text": "complaint-trump",
+   "size": 308/80
+ },
+ {
+   "text": "campaign-used",
+   "size": 306/80
+ },
+ {
+   "text": "trump-used",
+   "size": 305/80
+ },
+ {
+   "text": "watchdog-criminal",
+   "size": 305/80
+ },
+ {
+   "text": "watchdog-complaint",
+   "size": 303/80
+ },
+ {
+   "text": "breaking-criminal",
+   "size": 303/80
+ },
+ {
+   "text": "breaking-watchdog",
+   "size": 303/80
+ },
+ {
+   "text": "know-two",
+   "size": 287/80
+ },
+ {
+   "text": "got-know",
+   "size": 286/80
+ },
+ {
+   "text": "first-got",
+   "size": 286/80
+ },
+ {
+   "text": "trump-connection",
+   "size": 286/80
+ },
+ {
+   "text": "trump-first",
+   "size": 286/80
+ },
+ {
+   "text": "first-know",
+   "size": 286/80
+ },
+ {
+   "text": "connection-got",
+   "size": 286/80
+ },
+ {
+   "text": "connection-first",
+   "size": 286/80
+ },
+ {
+   "text": "got-two",
+   "size": 285/80
+ },
+ {
+   "text": "exposed-interview",
+   "size": 273/80
+ },
+ {
+   "text": "head-psychoanalysis",
+   "size": 270/80
+ },
+ {
+   "text": "truethoughts-head",
+   "size": 270/80
+ },
+ {
+   "text": "psychoanalysis-interview",
+   "size": 270/80
+ },
+ {
+   "text": "exposed-psychoanalysis",
+   "size": 270/80
+ },
+ {
+   "text": "head-exposed",
+   "size": 270/80
+ },
+ {
+   "text": "truethoughts-exposed",
+   "size": 270/80
+ },
+ {
+   "text": "rajeev-mp",
+   "size": 257/80
+ }
+];
+
+	var trumpTop_co = [
+ {
+   "text": "president-trump",
+   "size": 129
+ },
+ {
+   "text": "york-times",
+   "size": 125
+ },
+ {
+   "text": "white-house",
+   "size": 123
+ },
+ {
+   "text": "ms-clifford",
+   "size": 109
+ },
+ {
+   "text": "us-think",
+   "size": 83
+ },
+ {
+   "text": "email-address",
+   "size": 74
+ },
+ {
+   "text": "times-newsletters",
+   "size": 73
+ },
+ {
+   "text": "invalid-email",
+   "size": 72
+ },
+ {
+   "text": "box-invalid",
+   "size": 72
+ },
+ {
+   "text": "view-york",
+   "size": 72
+ },
+ {
+   "text": "invalid-address",
+   "size": 72
+ },
+ {
+   "text": "box-email",
+   "size": 72
+ },
+ {
+   "text": "york-newsletters",
+   "size": 72
+ },
+ {
+   "text": "united-states",
+   "size": 72
+ },
+ {
+   "text": "robot-clicking",
+   "size": 72
+ },
+ {
+   "text": "robot-box",
+   "size": 72
+ },
+ {
+   "text": "clicking-invalid",
+   "size": 72
+ },
+ {
+   "text": "select-newsletter",
+   "size": 72
+ },
+ {
+   "text": "address-enter",
+   "size": 72
+ },
+ {
+   "text": "verify-robot",
+   "size": 72
+ },
+ {
+   "text": "clicking-box",
+   "size": 72
+ },
+ {
+   "text": "verify-clicking",
+   "size": 72
+ },
+ {
+   "text": "donald-trump",
+   "size": 68
+ },
+ {
+   "text": "ms-trump",
+   "size": 44
+ },
+ {
+   "text": "stormy-daniels",
+   "size": 40
+ },
+ {
+   "text": "sexual-harassment",
+   "size": 37
+ },
+ {
+   "text": "version-article",
+   "size": 35
+ },
+ {
+   "text": "ms-mcdougal",
+   "size": 33
+ },
+ {
+   "text": "york-headline",
+   "size": 33
+ },
+ {
+   "text": "last-year",
+   "size": 33
+ },
+ {
+   "text": "york-edition",
+   "size": 32
+ },
+ {
+   "text": "president-donald",
+   "size": 32
+ },
+ {
+   "text": "version-appears",
+   "size": 32
+ },
+ {
+   "text": "edition-headline",
+   "size": 32
+ },
+ {
+   "text": "today-paper",
+   "size": 32
+ },
+ {
+   "text": "appears-print",
+   "size": 32
+ },
+ {
+   "text": "order-reprints",
+   "size": 31
+ },
+ {
+   "text": "reprints-paper",
+   "size": 31
+ },
+ {
+   "text": "reprints-today",
+   "size": 31
+ },
+ {
+   "text": "order-today",
+   "size": 31
+ },
+ {
+   "text": "article-appears",
+   "size": 30
+ },
+ {
+   "text": "article-print",
+   "size": 30
+ },
+ {
+   "text": "sexual-misconduct",
+   "size": 27
+ },
+ {
+   "text": "60-minutes",
+   "size": 27
+ },
+ {
+   "text": "trump-campaign",
+   "size": 27
+ },
+ {
+   "text": "islamic-state",
+   "size": 25
+ },
+ {
+   "text": "trump-organization",
+   "size": 25
+ },
+ {
+   "text": "last-week",
+   "size": 24
+ },
+ {
+   "text": "pm-edt",
+   "size": 24
+ },
+ {
+   "text": "us-see",
+   "size": 23
+ }
+];
+
+	var trumpTopTweet_co = [
+ {
+   "text": "president-trump",
+   "size": 1215/120
+ },
+ {
+   "text": "trump-trump",
+   "size": 743/70
+ },
+ {
+   "text": "first-days",
+   "size": 546/50
+ },
+ {
+   "text": "stock-market",
+   "size": 531/50
+ },
+ {
+   "text": "bush-trump",
+   "size": 440/40
+ },
+ {
+   "text": "trump-probe",
+   "size": 416/40
+ },
+ {
+   "text": "instead-trump",
+   "size": 416/40
+ },
+ {
+   "text": "market-first",
+   "size": 413/40
+ },
+ {
+   "text": "keeping-trump",
+   "size": 404/40
+ },
+ {
+   "text": "trump-testimony",
+   "size": 404/40
+ },
+ {
+   "text": "testimony-private",
+   "size": 403/40
+ },
+ {
+   "text": "idea-instead",
+   "size": 403/40
+ },
+ {
+   "text": "pay-per",
+   "size": 403/40
+ },
+ {
+   "text": "idea-keeping",
+   "size": 403/40
+ },
+ {
+   "text": "trade-war",
+   "size": 403/40
+ },
+ {
+   "text": "keeping-testimony",
+   "size": 403/40
+ },
+ {
+   "text": "testimony-probe",
+   "size": 403/40
+ },
+ {
+   "text": "instead-keeping",
+   "size": 403/40
+ },
+ {
+   "text": "probe-private",
+   "size": 403/40
+ },
+ {
+   "text": "probe-pay",
+   "size": 402/40
+ },
+ {
+   "text": "per-view",
+   "size": 402/40
+ },
+ {
+   "text": "private-pay",
+   "size": 402/40
+ },
+ {
+   "text": "pay-view",
+   "size": 402/40
+ },
+ {
+   "text": "private-per",
+   "size": 402/40
+ },
+ {
+   "text": "presidency-trump",
+   "size": 398/40
+ },
+ {
+   "text": "stock-gains",
+   "size": 393/40
+ },
+ {
+   "text": "market-gains",
+   "size": 393/40
+ },
+ {
+   "text": "days-presidency",
+   "size": 393/40
+ },
+ {
+   "text": "gains-days",
+   "size": 392/40
+ },
+ {
+   "text": "presidency-bush",
+   "size": 392/40
+ },
+ {
+   "text": "days-bush",
+   "size": 392/40
+ },
+ {
+   "text": "first-presidency",
+   "size": 392/40
+ },
+ {
+   "text": "gains-first",
+   "size": 392/40
+ },
+ {
+   "text": "national-guard",
+   "size": 354/40
+ },
+ {
+   "text": "trump-tax",
+   "size": 352/40
+ },
+ {
+   "text": "trump-russia",
+   "size": 349/40
+ },
+ {
+   "text": "trump-administration",
+   "size": 339/40
+ },
+ {
+   "text": "blame-blame",
+   "size": 294/40
+ },
+ {
+   "text": "particularly-delectable",
+   "size": 292/40
+ },
+ {
+   "text": "always-particularly",
+   "size": 292/40
+ },
+ {
+   "text": "delectable-eat",
+   "size": 292/40
+ },
+ {
+   "text": "eat-po",
+   "size": 292/40
+ },
+ {
+   "text": "always-delectable",
+   "size": 292/40
+ },
+ {
+   "text": "po-ixzuqk",
+   "size": 292/40
+ },
+ {
+   "text": "delectable-po",
+   "size": 292/40
+ },
+ {
+   "text": "particularly-eat",
+   "size": 292/40
+ },
+ {
+   "text": "eat-ixzuqk",
+   "size": 292/40
+ },
+ {
+   "text": "kylegriffin-trump",
+   "size": 282/40
+ },
+ {
+   "text": "trump-bill",
+   "size": 269/40
+ },
+ {
+   "text": "law-trump",
+   "size": 267/40
+ }
+];
+
+	var zuckTop_co = [{"text": "cambridge-analytica", "size": 240}, {"text": "mark-zuckerberg", "size": 126}, {"text": "york-times", "size": 113}, {"text": "chief-executive", "size": 108}, {"text": "facebook-users", "size": 101}, {"text": "social-network", "size": 98}, {"text": "us-think", "size": 88}, {"text": "email-address", "size": 78}, {"text": "united-states", "size": 75}, {"text": "newsletter-view", "size": 73}, {"text": "invalid-email", "size": 73}, {"text": "box-invalid", "size": 73}, {"text": "times-newsletters", "size": 73}, {"text": "view-york", "size": 73}, {"text": "invalid-address", "size": 73}, {"text": "box-email", "size": 73}, {"text": "york-newsletters", "size": 73}, {"text": "robot-clicking", "size": 73}, {"text": "robot-box", "size": 73}, {"text": "clicking-invalid", "size": 73}, {"text": "select-newsletter", "size": 73}, {"text": "enter-select", "size": 73}, {"text": "address-enter", "size": 73}, {"text": "verify-robot", "size": 73}, {"text": "clicking-box", "size": 73}, {"text": "verify-clicking", "size": 73}, {"text": "social-media", "size": 70}, {"text": "silicon-valley", "size": 70}, {"text": "50-million", "size": 65}, {"text": "facebook-data", "size": 65}, {"text": "facebook-chief", "size": 64}, {"text": "million-users", "size": 57}, {"text": "zuckerberg-testify", "size": 54}, {"text": "last-year", "size": 50}, {"text": "personal-information", "size": 49}, {"text": "last-week", "size": 47}, {"text": "president-trump", "size": 45}, {"text": "chief-officer", "size": 44}, {"text": "zuckerberg-facebook", "size": 41}, {"text": "million-facebook", "size": 39}, {"text": "trump-campaign", "size": 39}, {"text": "people-facebook", "size": 38}, {"text": "commerce-committee", "size": 37}, {"text": "facebook-executive", "size": 37}, {"text": "news-feed", "size": 36}, {"text": "data-facebook", "size": 36}, {"text": "personal-data", "size": 35}, {"text": "consulting-firm", "size": 35}, {"text": "senate-committee", "size": 34}, {"text": "users-data", "size": 33}];
+	var zuckTopTweet_co = [{"text": "mark-nonstop", "size": 1917/150}, {"text": "pretty-much", "size": 1771/150}, {"text": "mark-always", "size": 1749/150}, {"text": "pretty-act", "size": 1746/150}, {"text": "nonstop-always", "size": 1746/150}, {"text": "much-act", "size": 1746/150}, {"text": "apology-much", "size": 1746/150}, {"text": "always-apology", "size": 1746/150}, {"text": "apology-pretty", "size": 1746/150}, {"text": "nonstop-apology", "size": 1746/150}, {"text": "always-pretty", "size": 1746/150}, {"text": "since-mark", "size": 997/150}, {"text": "corresponding-since", "size": 856/150}, {"text": "corresponding-mark", "size": 823/150}, {"text": "mark-mark", "size": 783/150}, {"text": "final-appeal", "size": 757/150}, {"text": "final-able", "size": 757/150}, {"text": "appeal-way", "size": 757/150}, {"text": "able-way", "size": 757/150}, {"text": "decision-final", "size": 757/150}, {"text": "appeal-able", "size": 757/150}, {"text": "decision-appeal", "size": 757/150}, {"text": "able-note", "size": 756/150}, {"text": "note-exact", "size": 756/150}, {"text": "way-note", "size": 756/150}, {"text": "exact-wording", "size": 756/150}, {"text": "way-exact", "size": 756/150}, {"text": "note-wording", "size": 756/150}, {"text": "bill-mark", "size": 702/150}, {"text": "everyone-except", "size": 542/150}, {"text": "good-morning", "size": 541/150}, {"text": "morning-except", "size": 540/150}, {"text": "good-everyone", "size": 540/150}, {"text": "morning-everyone", "size": 540/150}, {"text": "act-mark", "size": 534/150}, {"text": "open-mark", "size": 475/150}, {"text": "mark-para", "size": 473/150}, {"text": "letter-mark", "size": 462}, {"text": "open-letter", "size": 452/150}, {"text": "like-mark", "size": 441/150}, {"text": "across-sign", "size": 424/150}, {"text": "sign-million", "size": 422/150}, {"text": "spreading-across", "size": 412/150}, {"text": "mark-spreading", "size": 412/150}, {"text": "mark-across", "size": 411}, {"text": "letter-spreading", "size": 411/150}, {"text": "spreading-sign", "size": 411/150}, {"text": "much-mark", "size": 410/150}, {"text": "para-mill", "size": 401/150}, {"text": "mark-mill", "size": 400/150}];
+
+
+	var width = 700, height = 350;
+
+    var color = d3.scale.linear()
+            .domain([0,1,2,3,4,5,6,10,15,20,100])
+            .range(["#ddd", "#ccc", "#bbb", "#aaa", "#999", "#888", "#777", "#666", "#555", "#444", "#333", "#222"]);
+
+    d3.layout.cloud().size([width, height])
+            .words(trumpTop)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw1)
+            .start();
+
+	d3.layout.cloud().size([width, height])
+            .words(cambTop)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw2)
+            .start();
+            
+    d3.layout.cloud().size([width, height])
+            .words(zuckTop)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw3)
+            .start();
+
+	d3.layout.cloud().size([width, height])
+            .words(trumpTopTweet)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw4)
+            .start();
+            
+    d3.layout.cloud().size([width, height])
+            .words(cambTopTweet)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw5)
+            .start();
+
+	d3.layout.cloud().size([width, height])
+            .words(zuckTopTweet)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw6)
+            .start();
+            
+            
+            
+            
+    d3.layout.cloud().size([width, height])
+            .words(trumpTop_co)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw7)
+            .start();
+
+	d3.layout.cloud().size([width, height])
+            .words(cambTop_co)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw8)
+            .start();
+            
+    d3.layout.cloud().size([width, height])
+            .words(zuckTop_co)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw9)
+            .start();
+
+	d3.layout.cloud().size([width, height])
+            .words(trumpTopTweet_co)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw10)
+            .start();
+            
+    d3.layout.cloud().size([width, height])
+            .words(cambTopTweet_co)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw11)
+            .start();
+
+	d3.layout.cloud().size([width, height])
+            .words(zuckTopTweet_co)
+            .rotate(0)
+            .fontSize(function(d) { return d.size; })
+            .on("end", draw12)
+            .start();
+            
+            
+
+
+    function draw1(words) {
+        d3.select("#wordcloud_trump_ny").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    function draw2(words) {
+        d3.select("#wordcloud_camb_ny").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    function draw3(words) {
+        d3.select("#wordcloud_zuck_ny").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    function draw4(words) {
+        d3.select("#wordcloud_trump_tw").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    function draw5(words) {
+        d3.select("#wordcloud_camb_tw").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    function draw6(words) {
+        d3.select("#wordcloud_zuck_tw").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    
+    
+    
+    
+    function draw7(words) {
+        d3.select("#wordcloud_trump_ny_co").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    function draw8(words) {
+        d3.select("#wordcloud_camb_ny_co").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    function draw9(words) {
+        d3.select("#wordcloud_zuck_ny_co").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    function draw10(words) {
+        d3.select("#wordcloud_trump_tw_co").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    function draw11(words) {
+        d3.select("#wordcloud_camb_tw_co").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    function draw12(words) {
+        d3.select("#wordcloud_zuck_tw_co").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "wordcloud")
+                .append("g")
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                .attr("transform", "translate("+(width / 2)+","+(height / 2)+")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function(d) { return d.size + "px"; })
+                .style("fill", function(d, i) { return color(i); })
+                .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function(d) { return d.text; });
+    }
+    
+    
+    
+    
+    
+    
+    var data = ["Trump Women Accuse", "Cambridge Analytica", "Mark Zuckerberg"];
+    	var select = d3.select('#wordcloud_dropdown')
+  			.append('select')
+  			.attr('class','select')
+	    	.on('change',onchange)
+
+		var options = select
+		  	.selectAll('option')
+			.data(data).enter()
+			.append('option')
+		.text(function (d) 
+			{
+				
+				return d; 
+			});
+			
+		function onchange() {
+			selectValue = d3.select('select').property('value')
+			if(selectValue == "Trump Women Accuse")
+			{
+			
+				d3.selectAll('#wordcloud_trump')
+					.style("display", "inline");
+					
+				d3.selectAll('#wordcloud_camb')
+					.style("display", "none");
+					
+				d3.selectAll('#wordcloud_zuck')
+					.style("display", "none");
+			}
+			if(selectValue == "Cambridge Analytica")
+			{
+			
+				d3.selectAll('#wordcloud_camb')
+					.style("display", "inline");
+					
+				d3.selectAll('#wordcloud_trump')
+					.style("display", "none");
+					
+				d3.selectAll('#wordcloud_zuck')
+					.style("display", "none");
+			}
+			if(selectValue == "Mark Zuckerberg")
+			{
+			
+				d3.selectAll('#wordcloud_zuck')
+					.style("display", "inline");
+					
+				d3.selectAll('#wordcloud_camb')
+					.style("display", "none");
+					
+				d3.selectAll('#wordcloud_trump')
+					.style("display", "none");
+			}
+			
+	};
+</script>
+</div>
+</html>
